@@ -694,9 +694,9 @@ struct Sorting {
     desc: bool,
 }
 
-#[get("/api/logs?<index>&<size>&<sort>")]
+#[get("/api/logs?<page>&<size>&<sort>")]
 async fn get_logs(
-    index: Option<String>,
+    page: Option<String>,
     size: Option<String>,
     sort: Option<String>,
 ) -> Result<Json<serde_json::Value>, rocket::http::Status> {
@@ -731,15 +731,15 @@ async fn get_logs(
         .unwrap();
     let mut stmt = db
         .prepare(&format!(
-            "SELECT id, timestamp, provider_id, prompt_tokens, completion_tokens, request_time, response_time, chat, model, speed FROM requests ORDER BY {} {} LIMIT ? OFFSET ?",
+            "SELECT id, timestamp, provider_id, prompt_tokens, completion_tokens, request_time, response_time, chat, model, speed FROM requests ORDER BY {} {} LIMIT ?1 OFFSET ?2",
             sort.as_ref().map_or("timestamp", |s| s.column.as_str()),
             sort.as_ref().map_or("DESC", |s| if s.desc { "DESC" } else { "ASC" })
         ))
         .unwrap();
     let page_size = size.map(|s| s.parse::<i64>().unwrap_or(10)).unwrap_or(10);
-    let offset = index.map(|i| i.parse::<i64>().unwrap_or(0)).unwrap_or(0) * page_size;
+    let offset = page.map(|i| i.parse::<i64>().unwrap_or(0)).unwrap_or(0) * page_size;
     let mut rows = stmt
-        .query_map([page_size.to_string(), offset.to_string()], |row| {
+        .query_map(params![page_size, offset], |row| {
             let id: i64 = row.get(0)?;
             let provider_id: String = row.get(2)?;
             let prompt_tokens: Option<i64> = row.get(3)?;
