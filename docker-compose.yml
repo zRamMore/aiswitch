@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  backend:
+    build: .
+    ports:
+      - "3400:3400"
+    volumes:
+      - ./backend:/app/backend
+      - ./frontend:/app/frontend
+    environment:
+      RUST_LOG: debug
