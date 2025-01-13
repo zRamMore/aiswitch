@@ -1020,7 +1020,14 @@ async fn rocket() -> _ {
     let config_path = config_path.join("config.json");
     let config = match AppConfig::load_from_file(config_path) {
         Ok(config) => config,
-        Err(_) => AppConfig::default(),
+        Err(_) => {
+            let db_path = dirs::data_dir().unwrap().join("aiswitch").join("db.sqlite");
+            let config = AppConfig {
+                db_path: db_path,
+                ..Default::default()
+            };
+            config
+        }
     };
     let db_path = config.db_path.clone();
     let config = Arc::new(Mutex::new(config));
