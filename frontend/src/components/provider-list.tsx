@@ -1,7 +1,7 @@
 import { Provider } from "@/types/provider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit, Power, PowerOff, Trash2 } from "lucide-react";
+import { Edit, Power, PowerOff, Trash2, Wrench } from "lucide-react";
 import { Combobox } from "./combobox";
 import {
   Dialog,
@@ -15,6 +15,7 @@ import {
 import { DialogClose } from "@radix-ui/react-dialog";
 import { ProviderEditDialog } from "./provider-edit";
 import { useState } from "react";
+import { PresetsEditorDialog } from "./presets-edit";
 
 interface ProviderListProps {
   providers: Provider[];
@@ -70,9 +71,11 @@ export const ProviderList = ({
                 )}
               </Button>
               <Dialog
-                open={open.includes(provider.id)}
+                open={open.includes(`provider${provider.id}`)}
                 onOpenChange={(o) =>
-                  o ? openDialog(provider.id) : closeDialog(provider.id)
+                  o
+                    ? openDialog(`provider${provider.id}`)
+                    : closeDialog(`provider${provider.id}`)
                 }
               >
                 <DialogTrigger asChild>
@@ -81,7 +84,7 @@ export const ProviderList = ({
                   </Button>
                 </DialogTrigger>
                 <ProviderEditDialog
-                  onClose={() => closeDialog(provider.id)}
+                  onClose={() => closeDialog(`provider${provider.id}`)}
                   provider={provider}
                 />
               </Dialog>
@@ -124,9 +127,10 @@ export const ProviderList = ({
             <p className="text-xs text-muted-foreground">
               URL: {provider.api_url}
             </p>
-            <p className="mt-2 text-xs text-muted-foreground">
+            <div className="mt-2 text-xs text-muted-foreground flex gap-2">
               <Combobox
                 mode="single" //single or multiple
+                className="flex-1"
                 options={provider.presets.map((preset) => ({
                   label: preset.name,
                   value: preset.id,
@@ -136,7 +140,25 @@ export const ProviderList = ({
                 onChange={(value) => console.log(value)}
                 onCreate={() => {}}
               />
-            </p>
+              <Dialog
+                open={open.includes(`presets${provider.id}`)}
+                onOpenChange={(o) =>
+                  o
+                    ? openDialog(`presets${provider.id}`)
+                    : closeDialog(`presets${provider.id}`)
+                }
+              >
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Wrench className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <PresetsEditorDialog
+                  onClose={() => closeDialog(`presets${provider.id}`)}
+                  provider={provider}
+                />
+              </Dialog>
+            </div>
           </CardContent>
         </Card>
       ))}
