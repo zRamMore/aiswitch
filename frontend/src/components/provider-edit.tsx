@@ -11,30 +11,46 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Provider } from "@/types/provider";
 import { useState } from "react";
-import { useUpdateProviderMutation } from "@/api";
+import { useAddProviderMutation, useUpdateProviderMutation } from "@/api";
 
 interface ProviderEditDialogProps {
   provider: Provider;
+  newProvider?: boolean;
   onClose: () => void;
 }
 
 export const ProviderEditDialog = ({
   provider: initialData,
+  newProvider,
   onClose,
 }: ProviderEditDialogProps) => {
   const [provider, setProvider] = useState(initialData);
+  const [addProviderMutation] = useAddProviderMutation();
   const [updateProviderMutation] = useUpdateProviderMutation();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    updateProviderMutation({
-      id: provider.id,
-      properties: {
-        name: provider.name,
-        api_url: provider.api_url,
-        api_key: provider.api_key,
-      },
-    });
+    if (newProvider) {
+      addProviderMutation({
+        id: provider.id,
+        properties: {
+          name: provider.name,
+          id: provider.id,
+          api_url: provider.api_url,
+          api_key: provider.api_key,
+          presets: [],
+        },
+      });
+    } else {
+      updateProviderMutation({
+        id: provider.id,
+        properties: {
+          name: provider.name,
+          api_url: provider.api_url,
+          api_key: provider.api_key,
+        },
+      });
+    }
     onClose();
   };
 
@@ -42,7 +58,7 @@ export const ProviderEditDialog = ({
     <DialogContent>
       <form onSubmit={handleSubmit}>
         <DialogHeader>
-          <DialogTitle>Edit Provider</DialogTitle>
+          <DialogTitle>{newProvider ? "Create" : "Edit"} Provider</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 mb-4">
           <div className="space-y-2">
@@ -94,7 +110,9 @@ export const ProviderEditDialog = ({
               Cancel
             </Button>
           </DialogClose>
-          <Button type="submit">Update Provider</Button>
+          <Button type="submit">
+            {newProvider ? "Create" : "Update"} Provider
+          </Button>
         </DialogFooter>
       </form>
     </DialogContent>

@@ -7,8 +7,12 @@ import {
   useProvidersQuery,
   useSetActiveProviderMutation,
 } from "@/api";
+import { Dialog, DialogTrigger } from "./components/ui/dialog";
+import { useState } from "react";
+import { ProviderEditDialog } from "./components/provider-edit";
 
 export default function ProviderManager() {
+  const [open, setOpen] = useState(false);
   const {
     data: providersData,
     isLoading: providersIsLoading,
@@ -43,9 +47,24 @@ export default function ProviderManager() {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Provider Manager</h1>
-      <Button className="mb-4">
-        <PlusCircle className="mr-2 h-4 w-4" /> Add New Provider
-      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button className="mb-4">
+            <PlusCircle className="mr-2 h-4 w-4" /> Add New Provider
+          </Button>
+        </DialogTrigger>
+        <ProviderEditDialog
+          onClose={() => setOpen(false)}
+          newProvider
+          provider={{
+            id: "",
+            name: "",
+            api_url: "",
+            api_key: "",
+            presets: [],
+          }}
+        />
+      </Dialog>
       <ProviderList
         providers={providers}
         activeProvider={activeProvider!}
