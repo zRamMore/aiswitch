@@ -29,7 +29,15 @@ export const ProviderList = ({
   onDelete,
   onSetActive,
 }: ProviderListProps) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<string[]>([]);
+
+  const openDialog = (id: string) => {
+    setOpen([...open, id]);
+  };
+
+  const closeDialog = (id: string) => {
+    setOpen(open.filter((i: string) => i !== id));
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -61,14 +69,19 @@ export const ProviderList = ({
                   <Power className="h-4 w-4" />
                 )}
               </Button>
-              <Dialog open={open} onOpenChange={setOpen}>
+              <Dialog
+                open={open.includes(provider.id)}
+                onOpenChange={(o) =>
+                  o ? openDialog(provider.id) : closeDialog(provider.id)
+                }
+              >
                 <DialogTrigger asChild>
                   <Button variant="ghost" size="icon">
                     <Edit className="h-4 w-4" />
                   </Button>
                 </DialogTrigger>
                 <ProviderEditDialog
-                  onClose={() => setOpen(false)}
+                  onClose={() => closeDialog(provider.id)}
                   provider={provider}
                 />
               </Dialog>
