@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate rocket;
 
-use config::{AppConfig, ProviderConfig};
+use config::{AppConfig, Preset, ProviderConfig};
 use log::warn;
 use reqwest::Client;
 use rocket::fs::NamedFile;
@@ -991,7 +991,108 @@ async fn delete_provider(
     } else {
         Json(HashMap::from([(
             "message".to_string(),
-            "Service not found".to_string(),
+            "Provider not found".to_string(),
+        )]))
+    }
+}
+
+#[post(
+    "/api/config/providers/<provider_id>/active-preset",
+    data = "<preset_id>"
+)]
+async fn set_active_preset(
+    provider_id: String,
+    preset_id: String,
+    config: &State<SharedConfig>,
+) -> Json<HashMap<String, String>> {
+    let mut config = config.lock().await;
+    if let Some(provider) = config.providers.iter_mut().find(|p| p.id == provider_id) {
+        if preset_id.is_empty() {
+            provider.preset = None;
+            Json(HashMap::from([(
+                "message".to_string(),
+                "Preset removed successfully".to_string(),
+            )]))
+        } else if provider.presets.iter().any(|p| p.id == preset_id) {
+            provider.preset = Some(preset_id);
+            Json(HashMap::from([(
+                "message".to_string(),
+                "Preset updated successfully".to_string(),
+            )]))
+        } else {
+            Json(HashMap::from([(
+                "message".to_string(),
+                "Preset not found".to_string(),
+            )]))
+        }
+    } else {
+        Json(HashMap::from([(
+            "message".to_string(),
+            "Provider not found".to_string(),
+        )]))
+    }
+}
+
+#[post("/api/config/providers/<provider_id>/presets", data = "<new_preset>")]
+async fn add_preset(
+    provider_id: String,
+    new_preset: Json<Preset>,
+    config: &State<SharedConfig>,
+) -> Json<HashMap<String, String>> {
+    let mut config = config.lock().await;
+    if let Some(provider) = config.providers.iter_mut().find(|p| p.id == provider_id) {
+        provider.presets.push(new_preset.into_inner());
+        Json(HashMap::from([(
+            "message".to_string(),
+            "Preset added successfully".to_string(),
+        )]))
+    } else {
+        Json(HashMap::from([(
+            "message".to_string(),
+            "Provider not found".to_string(),
+        )]))
+    }
+}
+
+#[put(
+    "/api/config/providers/<provider_id>/presets/<preset_id>",
+    data = "<updated_preset>"
+)]
+async fn update_preset(
+    provider_id: String,
+    preset_id: String,
+    updated_preset: Json<HashMap<String, serde_json::Value>>,
+    config: &State<SharedConfig>,
+) -> Json<HashMap<String, String>> {
+    let mut config = config.lock().await;
+    if let Some(provider) = config.providers.iter_mut().find(|p| p.id == provider_id) {
+        if let Some(preset) = provider.presets.iter_mut().find(|p| p.id == preset_id) {
+            let updated_preset = updated_preset.into_inner();
+            for (key, value) in updated_preset {
+                match key.as_str() {
+                    "name" => value.as_str().map(|v| preset.name = v.to_string()),
+                    "overrides" => value.as_object().map(|o| {
+                        for (k, v) in o {
+                            preset.overrides.insert(k.to_string(), v.clone());
+                        }
+                    }),
+                    _ => None,
+                };
+            }
+            Json(HashMap::from([(
+                "message".to_string(),
+                "Preset updated successfully".to_string(),
+            )]))
+        } else {
+            Json(HashMap::from([(
+                "message".to_string(),
+                "Preset not found".to_string(),
+            )]))
+        }
+    } else {
+        Json(HashMap::from([(
+            "message".to_string(),
+            "Provider not found".to_string(),
         )]))
     }
 }
@@ -1079,6 +1180,9 @@ async fn rocket() -> _ {
             add_provider,
             update_provider,
             delete_provider,
+            set_active_preset,
+            add_preset,
+            update_preset,
             get_logs,
             get_log,
             get_config,
