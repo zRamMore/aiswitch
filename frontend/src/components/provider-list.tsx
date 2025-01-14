@@ -16,6 +16,7 @@ import { DialogClose } from "@radix-ui/react-dialog";
 import { ProviderEditDialog } from "./provider-edit";
 import { useState } from "react";
 import { PresetsEditorDialog } from "./presets-edit";
+import { useSetActivePresetMutation } from "@/api";
 
 interface ProviderListProps {
   providers: Provider[];
@@ -31,6 +32,7 @@ export const ProviderList = ({
   onSetActive,
 }: ProviderListProps) => {
   const [open, setOpen] = useState<string[]>([]);
+  const [setActivePreset] = useSetActivePresetMutation();
 
   const openDialog = (id: string) => {
     setOpen([...open, id]);
@@ -137,7 +139,12 @@ export const ProviderList = ({
                 }))}
                 selected={provider.preset}
                 placeholder="Select a preset..."
-                onChange={(value) => console.log(value)}
+                onChange={(value) =>
+                  setActivePreset({
+                    providerId: provider.id,
+                    presetId: value as string,
+                  })
+                }
                 onCreate={() => {}}
               />
               <Dialog

@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { Provider } from "./types/provider";
+import { Preset, Provider } from "./types/provider";
 
 export interface LogOverview {
   id: string;
@@ -102,6 +102,36 @@ export const api = createApi({
       }),
       invalidatesTags: ["ActiveProvider"],
     }),
+    setActivePreset: builder.mutation<
+      void,
+      { providerId: string; presetId: string }
+    >({
+      query: ({ providerId, presetId }) => ({
+        url: `config/providers/${providerId}/active-preset`,
+        method: "POST",
+        body: presetId,
+      }),
+      invalidatesTags: ["Providers"],
+    }),
+    addPreset: builder.mutation<void, { providerId: string; preset: Preset }>({
+      query: ({ providerId, preset }) => ({
+        url: `config/providers/${providerId}/presets`,
+        method: "POST",
+        body: preset,
+      }),
+      invalidatesTags: ["Providers"],
+    }),
+    updatePreset: builder.mutation<
+      void,
+      { providerId: string; presetId: string; preset: Preset }
+    >({
+      query: ({ providerId, presetId, preset }) => ({
+        url: `config/providers/${providerId}/presets/${presetId}`,
+        method: "PUT",
+        body: preset,
+      }),
+      invalidatesTags: ["Providers"],
+    }),
     getLogs: builder.query<
       { logs: LogOverview[]; rowCount: number },
       {
@@ -137,6 +167,9 @@ export const {
   useUpdateProviderMutation,
   useDeleteProviderMutation,
   useSetActiveProviderMutation,
+  useSetActivePresetMutation,
+  useAddPresetMutation,
+  useUpdatePresetMutation,
   useGetLogsQuery,
   useGetLogQuery,
 } = api;

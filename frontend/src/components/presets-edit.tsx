@@ -12,6 +12,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { PlusCircle, X } from "lucide-react";
+import { useAddPresetMutation, useUpdatePresetMutation } from "@/api";
 interface PresetEditDialogProps {
   provider: Provider;
   onClose: () => void;
@@ -22,12 +23,15 @@ export const PresetsEditorDialog = ({
   onClose,
 }: PresetEditDialogProps) => {
   const [presets, setPresets] = useState(provider.presets);
+  const [addPresetMutation] = useAddPresetMutation();
+  const [updatePresetMutation] = useUpdatePresetMutation();
 
   const [selectedPreset, setSelectedPreset] = useState<string | undefined>(
     provider.preset
   );
 
-  const [id, setId] = useState<string | undefined>();
+  const [name, setName] = useState<string>("");
+  const [id, setId] = useState<string>("");
   const [overrides, setOverrides] = useState<[string, string | number][]>([]);
 
   const updateToSelectedPreset = useCallback(() => {
@@ -52,7 +56,8 @@ export const PresetsEditorDialog = ({
     };
     setPresets((prev) => [...prev, newPreset]);
     setOverrides([]);
-    setSelectedPreset(name);
+    setName(name);
+    setSelectedPreset(id);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -63,14 +68,26 @@ export const PresetsEditorDialog = ({
     ]);
 
     if (provider.presets.find((p) => p.id === id)) {
-      // Update existing preset
-      console.log("update");
+      updatePresetMutation({
+        providerId: provider.id,
+        presetId: id,
+        preset: {
+          id,
+          name,
+          overrides: Object.fromEntries(parsedOverrides),
+        },
+      });
     } else {
-      // Create new preset
-      console.log("create");
+      addPresetMutation({
+        providerId: provider.id,
+        preset: {
+          id,
+          name,
+          overrides: Object.fromEntries(parsedOverrides),
+        },
+      });
     }
 
-    console.log(parsedOverrides);
     onClose();
   };
 
@@ -155,15 +172,15 @@ export const PresetsEditorDialog = ({
             </Button>
           </div>
         </div>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button type="button" variant="outline">
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button type="submit">Save</Button>
+        </DialogFooter>
       </form>
-      <DialogFooter>
-        <DialogClose asChild>
-          <Button type="button" variant="outline">
-            Cancel
-          </Button>
-        </DialogClose>
-        <Button type="submit">Save</Button>
-      </DialogFooter>
     </DialogContent>
   );
 };
