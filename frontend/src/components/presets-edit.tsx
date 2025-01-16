@@ -56,6 +56,12 @@ export const PresetsEditorDialog = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (new Set(overrides.map((p) => p[0])).size !== overrides.length) {
+      return;
+    }
+    if (overrides.some((p) => !p[0].length)) {
+      return;
+    }
     const parsedOverrides = overrides.map(([key, value]) => [
       key,
       isNaN(Number(value)) ? value : Number(value),
@@ -125,41 +131,51 @@ export const PresetsEditorDialog = ({
         <div className="space-y-2 flex flex-col">
           <Label>Overrides</Label>
           {overrides.map((prop, index) => (
-            <div key={index} className="flex items-center space-x-2">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() =>
-                  setOverrides((prev) => prev.filter((_, i) => i !== index))
-                }
-              >
-                <X className="h-4 w-4" />
-              </Button>
-              <div className="flex items-center space-x-2 flex-grow">
-                <Input
-                  placeholder="Property Name"
-                  value={prop[0]}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setOverrides((prev) =>
-                      prev.map((p, i) => (i === index ? [value, p[1]] : p))
-                    );
-                  }}
-                  className="flex-grow"
-                />
-                <Input
-                  placeholder="Value"
-                  value={prop[1] as string}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setOverrides((prev) =>
-                      prev.map((p, i) => (i === index ? [p[0], value] : p))
-                    );
-                  }}
-                  className="flex-grow"
-                />
+            <div key={index} className="flex flex-col">
+              <div className="flex items-center space-x-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() =>
+                    setOverrides((prev) => prev.filter((_, i) => i !== index))
+                  }
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+                <div className="flex items-center space-x-2 flex-grow">
+                  <Input
+                    placeholder="Property Name"
+                    value={prop[0]}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setOverrides((prev) =>
+                        prev.map((p, i) => (i === index ? [value, p[1]] : p))
+                      );
+                    }}
+                    className="flex-grow"
+                  />
+                  <Input
+                    placeholder="Value"
+                    value={prop[1] as string}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setOverrides((prev) =>
+                        prev.map((p, i) => (i === index ? [p[0], value] : p))
+                      );
+                    }}
+                    className="flex-grow"
+                  />
+                </div>
               </div>
+              {(!prop[0].length ||
+                overrides.filter((p) => p[0] === prop[0]).length > 1) && (
+                <p className="text-red-500 bg-red-100 p-2 text-center my-2 rounded-md">
+                  {overrides.filter((p) => p[0] === prop[0]).length > 1
+                    ? "Property already exists"
+                    : "Property name cannot be empty"}
+                </p>
+              )}
             </div>
           ))}
           <div>
