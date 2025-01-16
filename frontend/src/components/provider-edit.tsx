@@ -15,12 +15,14 @@ import { useAddProviderMutation, useUpdateProviderMutation } from "@/api";
 
 interface ProviderEditDialogProps {
   provider: Provider;
+  providersIds: string[];
   newProvider?: boolean;
   onClose: () => void;
 }
 
 export const ProviderEditDialog = ({
   provider: initialData,
+  providersIds,
   newProvider,
   onClose,
 }: ProviderEditDialogProps) => {
@@ -30,6 +32,12 @@ export const ProviderEditDialog = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (
+      !provider.id ||
+      (providersIds.includes(provider.id) && provider.id !== initialData.id)
+    ) {
+      return;
+    }
     if (newProvider) {
       addProviderMutation({
         id: provider.id,
@@ -74,6 +82,12 @@ export const ProviderEditDialog = ({
           </div>
           <div className="space-y-2">
             <Label htmlFor="id">ID</Label>
+            {provider.id &&
+              initialData.id !== provider.id &&
+              providersIds.includes(provider.id) && (
+                <p className="text-red-500">ID already exists</p>
+              )}
+            {!provider.id && <p className="text-red-500">ID is required</p>}
             <Input
               id="id"
               value={provider.id}

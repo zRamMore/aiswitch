@@ -88,6 +88,7 @@ export const ProviderList = ({
                 <ProviderEditDialog
                   onClose={() => closeDialog(`provider${provider.id}`)}
                   provider={provider}
+                  providersIds={providers.map((p) => p.id)}
                 />
               </Dialog>
               <Dialog>

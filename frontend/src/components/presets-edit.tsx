@@ -22,7 +22,7 @@ export const PresetsEditorDialog = ({
   provider,
   onClose,
 }: PresetEditDialogProps) => {
-  const [presets, setPresets] = useState(provider.presets);
+  const presets = provider.presets;
   const [addPresetMutation] = useAddPresetMutation();
   const [updatePresetMutation] = useUpdatePresetMutation();
 
@@ -49,15 +49,9 @@ export const PresetsEditorDialog = ({
   const newPreset = (name: string) => {
     const id = name.toLowerCase().replace(/\s/g, "-");
 
-    const newPreset = {
-      id,
-      name,
-      overrides: {},
-    };
-    setPresets((prev) => [...prev, newPreset]);
     setOverrides([]);
     setName(name);
-    setSelectedPreset(id);
+    setId(id);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -114,6 +108,12 @@ export const PresetsEditorDialog = ({
         <div className="space-y-4 mb-4">
           <div className="space-y-2">
             <Label htmlFor="id">ID</Label>
+            {provider.id &&
+              provider.id !== id &&
+              provider.presets.find((p) => p.id === id) && (
+                <p className="text-red-500">ID already exists</p>
+              )}
+            {!id && <p className="text-red-500">ID is required</p>}
             <Input
               id="id"
               value={id}
