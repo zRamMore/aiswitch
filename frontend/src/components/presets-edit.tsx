@@ -30,13 +30,14 @@ export const PresetsEditorDialog = ({
     provider.preset
   );
 
-  const [name, setName] = useState<string>("");
+  const [name, setName] = useState<string>(provider.name);
   const [id, setId] = useState<string>("");
   const [overrides, setOverrides] = useState<[string, string | number][]>([]);
 
   const updateToSelectedPreset = useCallback(() => {
     const preset = presets.find((p) => p.id === selectedPreset);
     if (preset) {
+      setName(preset.name);
       setId(preset.id);
       setOverrides(Object.entries(preset.overrides));
     }
