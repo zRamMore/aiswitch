@@ -56,6 +56,7 @@ export default function ProviderManager() {
         <ProviderEditDialog
           onClose={() => setOpen(false)}
           newProvider
+          providersIds={providers.map((p) => p.id)}
           provider={{
             id: "",
             name: "",
