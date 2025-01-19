@@ -116,7 +116,7 @@ export const PresetsEditorDialog = ({
           <div className="space-y-2">
             <Label htmlFor="id">ID</Label>
             {provider.id &&
-              provider.id !== id &&
+              provider.preset !== id &&
               provider.presets.find((p) => p.id === id) && (
                 <p className="text-red-500">ID already exists</p>
               )}
